@@ -3,10 +3,9 @@ __author__ = 'andreas'
 
 from Bio import SeqIO
 from Bio.Alphabet import generic_dna
+from Bio import pairwise2
 #import nwalign as nw
-#import swalign
 import os
-import math
 
 #configuartion
 FILE_NAME = "SRR1536433_1000"
@@ -46,6 +45,23 @@ def run_mhap():
     #run mhap
     os.system("java -server -Xmx32g -jar {} -s {} > {}".format(MHAP_JAR, FASTA_FILE, MHAP_OUT))
 
+
+def transform_to_score(reads, mhap_overlap):
+    """
+    uses the mhap results to compute the score
+    :param reads:
+    :param mhap_overlap:
+    :return:
+    """
+    scores = {}
+    for (i, j) in mhap_overlap.keys():
+        read1 = reads[i]
+        read2 = reads[j]
+        score = pairwise2.align.localxx(read1, read2)[0][2]
+        scores[(i, j)] = score
+    return scores
+
+
 def prepare_lkh(reads, mhap_overlap):
     tsplib_par_string = "PROBLEM_FILE={}\nOUTPUT_TOUR_FILE={}".format(LKH_LIB, LKH_OUT)
     with open(LKH_PAR, "w") as f:
@@ -66,10 +82,6 @@ def prepare_lkh(reads, mhap_overlap):
             f.write('\n'+'\t'.join([str(-mhap_overlap.get((i,j), 0)) for j in range(-1, len(reads))]))
 
         f.write("\nEOF")
-
-
-
-
 
 
 def run_lkh():
@@ -96,3 +108,16 @@ def set_config(file=None, directory=None, jar=None, lkh=None):
     if jar is not None:
         global MHAP_JAR
         MHAP_JAR = jar
+
+
+def main():
+    fasta = parse_fasta()
+    # run_mhap()
+    mhap = parse_mhap()
+    scores = transform_to_score(fasta, mhap)
+    prepare_lkh(fasta, scores)
+    run_lkh()
+
+
+if __name__ == "__main__":
+    main()
