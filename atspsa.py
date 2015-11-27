@@ -66,7 +66,7 @@ def main():
     reads = parse_fasta(config["FASTA"])
     # mhapper.run_mhap(MHAP_JAR, FASTA_FILE, MHAP_OUT)
     # scores = mhapper.parse_mhap(MHAP_OUT)
-    makealignmentdb.create_ovl(config["DB"], config["LAS"])
+    makealignmentdb.create_ovl(config["DB"], config["LAS"], config["OVL"])
     scores = db2score.read_ovl_file(config["OVL"])
     createtsp.prepare_lkh(config["LKH_PAR"], config["LKH_LIB"], config["LKH_OUT"], len(reads),
                           db2score.get_scores_without_orientation(scores))

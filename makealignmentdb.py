@@ -20,7 +20,6 @@ def align(db):
     os.system("{}/LAmerge {}.las *.S.las".format(atspsa.DALIGNER, filename))
 
 
-def create_ovl(db, las):
-    filename = db.split(".db")[0]
-    os.system("{}/LAdump -cdo {} {} > {} ".format(atspsa.DALIGNER, db, las, filename))
-    return 0
+def create_ovl(db, las, ovl):
+    print("Create overlap file")
+    os.system("{}/LAdump -cdo {} {} > {} ".format(atspsa.DALIGNER, db, las, ovl))
