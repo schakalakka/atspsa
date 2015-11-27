@@ -41,13 +41,13 @@ def read_config():
             config[line.split("=")[0]] = line.split("=")[1].strip("\n")
     if config["FILENAME"] is not "":
         filename = config["FILENAME"]
-        config["DB"] = filename + ".db"
-        config["FASTA"] = filename + ".fasta"
-        config["LAS"] = filename + ".las"
-        config["OVL"] = filename + ".ovl"
-        config["LKH_PAR"] = filename + ".par"
-        config["LKH_OUT"] = filename + ".tour"
-        config["LKH_LIB"] = filename + ".atsp"
+        config["DB"] = config["DIR"] + filename + ".db"
+        config["FASTA"] = config["DIR"] + filename + ".fasta"
+        config["LAS"] = config["DIR"] + filename + ".las"
+        config["OVL"] = config["DIR"] + filename + ".ovl"
+        config["LKH_PAR"] = config["DIR"] + filename + ".par"
+        config["LKH_OUT"] = config["DIR"] + filename + ".tour"
+        config["LKH_LIB"] = config["DIR"] + filename + ".atsp"
     return config
 
 
