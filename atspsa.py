@@ -15,7 +15,6 @@ DALIGNER = "/home/andreas/PycharmProjects/DALIGNER/"
 
 
 def parse_fasta(fasta_file):
-
     return [(str(seqRecord.seq)) for seqRecord in SeqIO.parse(file, "fasta", generic_dna)]
 
 
@@ -24,7 +23,6 @@ def parse_tour(tour_file):
     with open(file) as f:
         [tour.append(int(line.splitlines()[0]) - 2) for line in f if
          ((line.splitlines()[0].isdigit()) and (int(line.splitlines()[0]) > 1))]
-
     return tour
 
 
