@@ -21,5 +21,3 @@ def read_ovl_file(file):
 def get_scores_without_orientation(scores):
     return {key: scores[key][0] for key in scores.keys()}
 
-
-read_ovl_file("/run/media/andreas/INTENSO/fastas/ecoli_1000/ecoli_1000.db.ovl")
