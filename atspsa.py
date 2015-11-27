@@ -7,27 +7,19 @@ from Bio import SeqIO
 from Bio.Alphabet import generic_dna
 
 #configuartion
-FILE_NAME = "ecoli_1000"
-DIR = "/run/media/andreas/INTENSO/fastas/ecoli_1000"
+
 MHAP_JAR = "/home/andreas/mhap/mhap-1.6.jar"
 LKH_EXE = "/home/andreas/lkh/LKH-2.0.7/LKH"
-FASTA_FILE = "{}/{}.fasta".format(DIR, FILE_NAME)
-MHAP_OUT = "{}/{}.mhap.out".format(DIR, FILE_NAME)
-LKH_PAR = "{}/{}.par".format(DIR, FILE_NAME)
-LKH_OUT = "{}/{}.tour".format(DIR, FILE_NAME)
-LKH_LIB = "{}/{}.atsp".format(DIR, FILE_NAME)
-MUNKRES_OUT = "{}/{}.munkres.out".format(DIR, FILE_NAME)
-OVL_FILE = "{}/{}.db.ovl".format(DIR, FILE_NAME)
+DAZZ_DB = "/home/andreas/PycharmProject/DAZZ_DB"
+DALIGNER = "/home/andreas/PycharmProjects/DALIGNER/"
 
-def parse_fasta(file=None):
-    if file is None:
-        file = FASTA_FILE
+
+def parse_fasta(fasta_file):
+
     return [(str(seqRecord.seq)) for seqRecord in SeqIO.parse(file, "fasta", generic_dna)]
 
 
-def parse_tour(file=None):
-    if file is None:
-        file = LKH_OUT
+def parse_tour(tour_file):
     tour = []
     with open(file) as f:
         [tour.append(int(line.splitlines()[0]) - 2) for line in f if
@@ -35,17 +27,28 @@ def parse_tour(file=None):
 
     return tour
 
-def run_lkh():
-    os.system("{} {}".format(LKH_EXE, LKH_PAR))
+
+def run_lkh(lkh_par_file):
+    os.system("{} {}".format(LKH_EXE, lkh_par_file))
 
 
 def main():
-    reads = parse_fasta(FASTA_FILE)
+    filename = "/home/andy/seqdata/ecoli.1.subreads/ecoli.1.subreads"
+
+    DB = filename + ".db"
+    FASTA = filename + ".fasta"
+    LAS = filename + ".las"
+    OVL = filename + ".ovl"
+    LKH_PAR = filename + ".par"
+    LKH_OUT = filename + ".tour"
+    LKH_LIB = filename + ".atsp"
+
+    reads = parse_fasta(FASTA)
     # mhapper.run_mhap(MHAP_JAR, FASTA_FILE, MHAP_OUT)
     # scores = mhapper.parse_mhap(MHAP_OUT)
-    scores = db2score.read_ovl_file(OVL_FILE)
+    scores = db2score.read_ovl_file(OVL)
     createtsp.prepare_lkh(LKH_PAR, LKH_LIB, LKH_OUT, len(reads), db2score.get_scores_without_orientation(scores))
-    run_lkh()
+    # run_lkh()
 
 
 if __name__ == "__main__":

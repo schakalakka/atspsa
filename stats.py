@@ -2,11 +2,11 @@ __author__ = 'andreas'
 
 from collections import defaultdict
 
-import assembler
+import atspsa
 
-reads = assembler.parse_fasta()
-overlaps = assembler.parse_mhap()
-tour = assembler.parse_tour()
+reads = atspsa.parse_fasta()
+overlaps = atspsa.parse_mhap()
+tour = atspsa.parse_tour()
 
 # make overlap_help dict
 ovl_sets = defaultdict(set)
