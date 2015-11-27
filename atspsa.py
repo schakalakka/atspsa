@@ -15,12 +15,12 @@ DALIGNER = "/home/andreas/PycharmProjects/DALIGNER/"
 
 
 def parse_fasta(fasta_file):
-    return [(str(seqRecord.seq)) for seqRecord in SeqIO.parse(file, "fasta", generic_dna)]
+    return [(str(seqRecord.seq)) for seqRecord in SeqIO.parse(fasta_file, "fasta", generic_dna)]
 
 
 def parse_tour(tour_file):
     tour = []
-    with open(file) as f:
+    with open(tour_file) as f:
         [tour.append(int(line.splitlines()[0]) - 2) for line in f if
          ((line.splitlines()[0].isdigit()) and (int(line.splitlines()[0]) > 1))]
     return tour
@@ -32,7 +32,7 @@ def run_lkh(lkh_par_file):
 
 def main():
     filename = "/home/andy/seqdata/ecoli.1.subreads/ecoli.1.subreads"
-
+    # filename = "/run/media/andreas/INTENSO/fastas/ecoli_1000/ecoli_1000"
     DB = filename + ".db"
     FASTA = filename + ".fasta"
     LAS = filename + ".las"
