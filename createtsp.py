@@ -1,4 +1,5 @@
 def prepare_lkh(LKH_PAR, LKH_LIB, LKH_OUT, nr_of_reads, scores):
+    print("Preparing for LKH")
     tsplib_par_string = "PROBLEM_FILE={}\nOUTPUT_TOUR_FILE={}".format(LKH_LIB, LKH_OUT)
     with open(LKH_PAR, "w") as f:
         f.write(tsplib_par_string)
@@ -18,3 +19,4 @@ def prepare_lkh(LKH_PAR, LKH_LIB, LKH_OUT, nr_of_reads, scores):
             f.write('\n' + '\t'.join([str(-scores.get((i, j), 0)) for j in range(-1, nr_of_reads)]))
 
         f.write("\nEOF")
+    print("Preparing for LKH finished.")

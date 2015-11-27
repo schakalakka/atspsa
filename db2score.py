@@ -1,4 +1,5 @@
 def read_ovl_file(file):
+    print("Reading OVL file.")
     scores = {}
     with open(file, "r") as f:
         for line in f:
@@ -15,6 +16,7 @@ def read_ovl_file(file):
                     if scores[(tail, head)] > diff / (len1 + len2):
                         break
                 scores[(tail, head)] = (int(100 * diff / (len1 + len2)), orientation)
+    print("Reading OVL file finished")
     return scores
 
 
