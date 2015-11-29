@@ -1,6 +1,8 @@
 def prepare_lkh(filename, nr_of_reads, scores):
     print("Preparing for LKH")
-    tsplib_par_string = "PROBLEM_FILE={}\nOUTPUT_TOUR_FILE={}".format(filename + ".atsp", filename + ".tour")
+    tsplib_par_string = "PROBLEM_FILE={}\nOUTPUT_TOUR_FILE={}\nTOUR_FILE={}".format(filename + ".atsp",
+                                                                                    filename + ".tour",
+                                                                                    filename + ".tour")
     with open(filename + ".par", "w") as f:
         f.write(tsplib_par_string)
 
