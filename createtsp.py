@@ -1,13 +1,13 @@
-def prepare_lkh(LKH_PAR, LKH_LIB, LKH_OUT, nr_of_reads, scores):
+def prepare_lkh(filename, nr_of_reads, scores):
     print("Preparing for LKH")
-    tsplib_par_string = "PROBLEM_FILE={}\nOUTPUT_TOUR_FILE={}".format(LKH_LIB, LKH_OUT)
-    with open(LKH_PAR, "w") as f:
+    tsplib_par_string = "PROBLEM_FILE={}\nOUTPUT_TOUR_FILE={}".format(filename + ".atsp", filename + ".tour")
+    with open(filename + ".par", "w") as f:
         f.write(tsplib_par_string)
 
-    with open(LKH_LIB, "w") as f:
+    with open(filename + ".atsp", "w") as f:
         # dimension +1 because of the special knot
         tsplib_string = "NAME: {}\nTYPE: ATSP \nCOMMENT: {}\nDIMENSION: {} \nEDGE_WEIGHT_TYPE: EXPLICIT \n" \
-                        "EDGE_WEIGHT_FORMAT: FULL_MATRIX \nEDGE_WEIGHT_SECTION".format(LKH_LIB, LKH_LIB,
+                        "EDGE_WEIGHT_FORMAT: FULL_MATRIX \nEDGE_WEIGHT_SECTION".format(filename, filename,
                                                                                        (nr_of_reads + 1))
 
         f.write(tsplib_string)

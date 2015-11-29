@@ -1,25 +1,23 @@
-import atspsa
-
 import os
 
 
-def create_db(dest, source_files):
+def create_db(dazz_db_dir, dest_db, source_files):
     """
 
-    :param dest:
+    :param dest_db:
     :param source_files: list of fasta files
     :return:
     """
-    os.system("{}/fasta2DB {} -f {}".format(atspsa.DAZZ_DB, dest, " ".join(source_files)))
+    os.system("{}/fasta2DB {} -f {}".format(dazz_db_dir, dest_db, " ".join(source_files)))
 
 
-def align(db):
-    filename = db.split(".db")[0]
-    os.system("{}/daligner {} {}".format(atspsa.DALIGNER, db, db))
-    os.system("{}/LAsort *.las".format(atspsa.DALIGNER))
-    os.system("{}/LAmerge {}.las *.S.las".format(atspsa.DALIGNER, filename))
+def align(daligner_dir, dir_of_files, filename):
+    os.chdir(dir_of_files)
+    os.system("{}/daligner {}.db {}.db".format(daligner_dir, filename, filename))
+    os.system("{}/LAsort *.las".format(daligner_dir))
+    os.system("{}/LAmerge {}.las *.S.las".format(daligner_dir, filename))
 
 
-def create_ovl(db, las, ovl):
+def create_ovl(daligner_dir, filename):
     print("Create overlap file")
-    os.system("{}/LAdump -cdo {} {} > {} ".format(atspsa.DALIGNER, db, las, ovl))
+    os.system("{}/LAdump -cdo {}.db {}.las > {}.ovl ".format(daligner_dir, filename, filename, filename))
