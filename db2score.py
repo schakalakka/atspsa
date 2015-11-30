@@ -4,8 +4,8 @@ def read_ovl_file(filename):
     with open(filename + ".ovl", "r") as f:
         for line in f:
             if line.startswith("P"):
-                tail = int(line.split(" ")[1])
-                head = int(line.split(" ")[2])
+                tail = int(line.split(" ")[1]) - 1
+                head = int(line.split(" ")[2]) - 1
                 orientation = line.split(" ")[3].split("\n")[0]
             elif line.startswith("C"):
                 len1 = float(line.split(" ")[2]) - float(line.split(" ")[1])
@@ -15,7 +15,8 @@ def read_ovl_file(filename):
                 if (tail, head) in scores:
                     if scores[(tail, head)] > int((len1 + len2) / 2 - diff):
                         break
-                scores[(tail, head)] = (int((len1 + len2) / 2 - diff), orientation)
+                scores[(tail, head)] = (
+                    int((len1 + len2) / 2 - diff), orientation)  # TODO DALIGNER counts from 1 to nr_of_reads
     print("Reading OVL file finished")
     return scores
 

@@ -22,7 +22,7 @@ def parse_fasta(fasta_file):
 def parse_tour(tour_file):
     print("Parsing tour.")
     tour = []
-    with open(tour_file) as f:
+    with open(tour_file + ".tour") as f:
         [tour.append(int(line.splitlines()[0]) - 2) for line in f if
          ((line.splitlines()[0].isdigit()) and (int(line.splitlines()[0]) > 1))]
     print("Parsing tour finished.")
@@ -30,7 +30,7 @@ def parse_tour(tour_file):
 
 
 def run_lkh(lkh_par_file):
-    os.system("{} {}".format(LKH_EXE, lkh_par_file + ".par"))
+    os.system("{}LKH {}".format(LKH_EXE, lkh_par_file + ".par"))
 
 
 def read_config():
