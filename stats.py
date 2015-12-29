@@ -19,7 +19,8 @@ def make_stat(filename):
         ovl_lists[i] = sorted(ovl_sets[i], key=int, reverse=True)
 
     # count how often was the best (second best...) edge used
-    nr_best_edge_used = [0] * 25
+    nr_best_edge_used = [0] * 20
+    biggerthan = 0
     for i, elem in enumerate(tour):
         if i == len(tour) - 1:
             break
@@ -30,4 +31,7 @@ def make_stat(filename):
                 nr_best_edge_used[n + 1] += 1
         except KeyError:  # used expensive edge
             nr_best_edge_used[0] += 1
+        except IndexError:
+            print("n=", n)
+            biggerthan += 1
     return (nr_best_edge_used, overlaps)
