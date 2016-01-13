@@ -1,15 +1,15 @@
 __author__ = 'andreas'
 
+import parser
 from collections import defaultdict
 
-import atspsa
-import db2score
+from atspsacore import db2score
 
 
 def make_stat(filename):
     # reads = atspsa.parse_fasta(filename)
     overlaps = db2score.get_scores_without_orientation(db2score.read_ovl_file(filename))
-    tour = atspsa.parse_tour(filename)
+    tour = parser.parse_tour(filename)
 
     # make overlap_help dict
     ovl_sets = defaultdict(set)

@@ -13,7 +13,7 @@ def read_ovl_file(filename):
             elif line.startswith("D"):
                 diff = float(line.split(" ")[1])
                 if (tail, head) in scores:
-                    if scores[(tail, head)] > int((len1 + len2) / 2 - diff):
+                    if scores[(tail, head)][0] > int((len1 + len2) / 2 - diff):
                         break
                 scores[(tail, head)] = (
                     int((len1 + len2) / 2 - diff), orientation)  # TODO DALIGNER counts from 1 to nr_of_reads
