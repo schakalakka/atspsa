@@ -1,8 +1,9 @@
 import sys
 
 sys.path.insert(0, '/home/andreas/workspace/align/')
+sys.path.insert(0, '/home/andreas/workspace/swalign/')
 
-import align
+import swalign
 
 
 def read_align_file(filename):
@@ -16,11 +17,12 @@ def write_align_file(filename, scores):
 
 
 def compute_scores(reads):
-    # return {(i,j): align.Align(x, y, init=True).get_score() for i,x in enumerate(reads) for j,y in enumerate(reads)}
-    scores = {}
-    for i, x in enumerate(reads):
-        for j, y in enumerate(reads):
-            if i < j:
-                print(i, j)
-                scores[(i, j)] = align.Align(x, y, init=True).get_score()
-    return scores
+    return {(i, j): swalign.fast_smith_waterman(x, y)[2] for i, x in enumerate(reads) for j, y in enumerate(reads)}
+    # scores = {}
+    # for i, x in enumerate(reads):
+    #     for j, y in enumerate(reads):
+    #         if i < j:
+    #             print(i, j)
+    #             #scores[(i, j)] = align.Align(x, y, init=True).get_score()
+    #             scores[(i, j)] = swalign.fast_smith_waterman(x, y)[2]
+    # return scores
