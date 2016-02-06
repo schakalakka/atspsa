@@ -1,4 +1,5 @@
 import os
+import time
 from multiprocessing import Pool
 
 from atspsacore import computealignment
@@ -18,7 +19,7 @@ def pool_func(filename):
     curr_DIR = DIR + filename
     os.chdir(curr_DIR)
     reads = parser.parse_fasta(filename)
-    scores = computealignment.compute_scores(reads)
+    scores = computealignment.compute_scores(reads, filename)
     computealignment.write_align_file(filename, scores)
     createtsp.prepare_lkh(filename, len(reads), scores)
 
@@ -32,5 +33,8 @@ def pool_func(filename):
     #                       sparse_scores)
 
 
+start = time.time()
 pool = Pool(processes=CPUS)
 pool.map(pool_func, dirs)
+end = time.time()
+print(end - start)
