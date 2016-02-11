@@ -7,13 +7,16 @@ mylength = len(myseq)
 nuc_list = list(myseq)
 
 
-def create_pure_random_data(nr_of_reads_list, average_length_list):
-    for nr_of_reads in nr_of_reads_list:
+def create_pure_random_data():
+    for coverage in coverages:
         for average_length in average_length_list:
-            foo = "mkdir {}".format(DIR + "shuffled_{}_{}".format(nr_of_reads, average_length))
+            nr_of_reads = int(mylength * coverage / average_length)
+            dist_till_next_read = int(mylength / nr_of_reads)
+
+            foo = "mkdir {}".format(DIR + "shuffled_c{}_l{}".format(coverage, average_length))
             os.system(foo)
-            filename = DIR + "shuffled_{}_{}/shuffled_{}_{}".format(nr_of_reads, average_length, nr_of_reads,
-                                                                    average_length)
+            filename = DIR + "shuffled_c{}_l{}/shuffled_c{}_l{}".format(coverage, average_length, coverage,
+                                                                        average_length)
             with open("{}.fasta".format(filename, nr_of_reads, average_length), "w") as handle:
                 for i in range(nr_of_reads):
                     while True:
@@ -51,28 +54,34 @@ def create_obvious_initial_data():
             os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
 
 
-for coverage in coverages:
-    for average_length in average_length_list:
-        nr_of_reads = int(mylength * coverage / average_length)
+def create_initial_data():
+    for coverage in coverages:
+        for average_length in average_length_list:
+            nr_of_reads = int(mylength * coverage / average_length)
 
-        dist_till_next_read = int(mylength / nr_of_reads)
-        foo = "mkdir {}".format(DIR + "shuffled_c{}_l{}".format(coverage, average_length))
-        os.system(foo)
-        filename = DIR + "shuffled_c{}_l{}/shuffled_c{}_l{}".format(coverage, average_length, coverage, average_length)
-        pre_list = []
-        for i in range(nr_of_reads):
-            startindex = random.randint(0, mylength)
-            length = average_length + random.randint(-average_length * 0.1, average_length * 0.1)
-            pre_list.append((startindex, length))
-        pre_list = sorted(pre_list, key=lambda tup: tup[0])
-        with open("{}.fasta".format(filename, nr_of_reads, average_length), "w") as handle:
-            for pre_elem in pre_list:
-                startindex = pre_elem[0]
-                length = pre_elem[1]
-                endindex = int(min(startindex + length, mylength))
-                if endindex - startindex >= 30:
-                    currentseq = nuc_list[startindex:endindex]
-                    handle.write(
+            dist_till_next_read = int(mylength / nr_of_reads)
+            foo = "mkdir {}".format(DIR + "shuffled_c{}_l{}".format(coverage, average_length))
+            os.system(foo)
+            filename = DIR + "shuffled_c{}_l{}/shuffled_c{}_l{}".format(coverage, average_length, coverage,
+                                                                        average_length)
+            pre_list = []
+            for i in range(nr_of_reads):
+                startindex = random.randint(0, mylength)
+                length = average_length + random.randint(-average_length * 0.1, average_length * 0.1)
+                pre_list.append((startindex, length))
+            pre_list = sorted(pre_list, key=lambda tup: tup[0])
+            with open("{}.fasta".format(filename, nr_of_reads, average_length), "w") as handle:
+                for pre_elem in pre_list:
+                    startindex = pre_elem[0]
+                    length = pre_elem[1]
+                    endindex = int(min(startindex + length, mylength))
+                    if endindex - startindex >= 30:
+                        currentseq = nuc_list[startindex:endindex]
+                        handle.write(
                             ">NC_005816_Yersinia_pestis_biovar_Microtus/{}/{}_{}\n".format(i + 1, startindex, endindex))
-                    handle.write("".join(currentseq) + "\n")
-        os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
+                        handle.write("".join(currentseq) + "\n")
+            os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
+
+
+create_pure_random_data()
+# create_initial_data()

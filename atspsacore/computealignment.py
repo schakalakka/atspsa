@@ -1,8 +1,7 @@
-import sys
-
-sys.path.insert(0, '/home/andreas/workspace/swalign/')
-
+import pickle
 from ext_swalign import *
+
+from config import *
 
 
 def read_align_file(filename):
@@ -10,6 +9,11 @@ def read_align_file(filename):
 
 
 def write_align_file(filename, scores):
+    # writescores as pickle for easier loading
+    with open(filename + '.alignpickle', 'wb') as f:
+        pickle.dump(scores, f)
+    # write scores as human readable file
+    # tail head weight
     with open(filename + '.align', 'w') as f:
         for key, elem in scores.items():
             f.write('{}\t{}\t{}\n'.format(key[0], key[1], elem))
@@ -17,8 +21,13 @@ def write_align_file(filename, scores):
 
 def compute_scores(reads, filename):
     temp_scores = {(i, j): (fast_smith_waterman(x, y)[2:5]) for i, x in enumerate(reads) for j, y in enumerate(reads)}
-    with open(filename + '_alignstat.stat', 'w') as f:
-        [f.write('{}\t{}\n'.format(val[1], val[2])) for key, val in temp_scores.items()]
+    temp_scores = {key: val for key, val in temp_scores.items() if key[0] > key[1] and val[0] >= MIN_SCORE}
+
+    pre_alignstat = [(val[1], val[2]) for key, val in temp_scores.items()]
+    alignstat = {elem: pre_alignstat.count(elem) for elem in set(pre_alignstat)}
+
+    with open(filename + '_alignstat.pickle', 'wb') as f:
+        pickle.dump(alignstat, f)
 
     return {key: val[0] for key, val in temp_scores.items()}
     # scores = {}
