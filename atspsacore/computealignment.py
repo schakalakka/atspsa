@@ -1,5 +1,5 @@
 import pickle
-from ext_swalign import *
+from ext_calign import *
 
 from config import *
 
@@ -20,8 +20,34 @@ def write_align_file(filename, scores):
 
 
 def compute_scores(reads, filename):
-    temp_scores = {(i, j): (fast_smith_waterman(x, y)[2:5]) for i, x in enumerate(reads) for j, y in enumerate(reads)}
-    temp_scores = {key: val for key, val in temp_scores.items() if key[0] > key[1] and val[0] >= MIN_SCORE}
+    if ALIGNMENT_TYPE == 'semiglobal':
+        temp_scores = {}
+        for i, a in enumerate(reads):
+            for j, b in enumerate(reads):
+                if i < j:
+                    (score, row, col) = align(a, b, ALIGNMENT_TYPE)[2:5]
+                    alen = len(a)
+                    blen = len(b)
+                    if score >= MIN_SCORE:
+                        if alen == row and blen == col:
+                            temp_scores[(i, j)] = (score, row, col)
+                            temp_scores[(j, i)] = (score, row, col)
+                        elif alen == row and blen > col:
+                            temp_scores[(i, j)] = (score, row, col)
+                        elif alen > row and blen == col:
+                            temp_scores[(j, i)] = (score, row, col)
+                        else:
+                            print('Huh?')
+    else:
+        #compute alignment scores
+        #(index of read 1, index of read 2): (score, matrix row, matrix col)
+        temp_scores = {(i, j): (align(x, y, ALIGNMENT_TYPE)[2:5]) for i, x in enumerate(reads) for j, y in enumerate(reads) if i < j}
+        #discard all scores under threshold MIN_SCORE
+        temp_scores = {key: val for key, val in temp_scores.items() if val[0] >= MIN_SCORE}
+        #make scores directed according to the matrix index information
+
+
+
 
     pre_alignstat = [(val[1], val[2]) for key, val in temp_scores.items()]
     alignstat = {elem: pre_alignstat.count(elem) for elem in set(pre_alignstat)}

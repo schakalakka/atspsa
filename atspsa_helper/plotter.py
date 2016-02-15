@@ -77,15 +77,12 @@ def make_align_matrix_plot():
 
         plt.matshow(mat)
 
-        # plt.plot(nr_best_edge_used, 'k', nr_best_edge_used, "bo")
-        # plt.title(filename)
-        # plt.grid(True)
-        # plt.xticks(range(len(nr_best_edge_used)))
-        # plt.yticks(range(0, max(nr_best_edge_used) + 10, 5))
-        # plt.ylabel("How often is the n_th best edge used")
-        # plt.xlabel("n-th best edge")
-        # plt.savefig(filename + "_plot.pdf")
-        plt.show()
+        plt.title(current_elem + ' max SW score')
+        plt.grid(True)
+        plt.ylabel("Sequence 2")
+        plt.xlabel("Sequence 1")
+        plt.savefig(current_elem + "_SW_plot.pdf")
+        #plt.show()
 
 
 def make_graph_matrix_plot():
@@ -107,15 +104,14 @@ def make_graph_matrix_plot():
 
         plt.matshow(mat)
 
-        # plt.plot(nr_best_edge_used, 'k', nr_best_edge_used, "bo")
-        # plt.title(filename)
-        # plt.grid(True)
+        plt.title(current_elem + ' TSP graph ')
+        plt.grid(True)
         # plt.xticks(range(len(nr_best_edge_used)))
         # plt.yticks(range(0, max(nr_best_edge_used) + 10, 5))
-        # plt.ylabel("How often is the n_th best edge used")
-        # plt.xlabel("n-th best edge")
-        # plt.savefig(filename + "_plot.pdf")
-        plt.show()
+        plt.ylabel("Edges")
+        plt.xlabel("Edges")
+        plt.savefig(current_elem + "_graph_plot.pdf")
+        #plt.show()
 
 
 # plot_all_with_sum()

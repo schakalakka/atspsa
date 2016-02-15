@@ -25,7 +25,7 @@ def pool_func(filename):
     sparse_scores = {}
     for i, elem in enumerate(reads):
         curr_scores = {(x, y): scores[(x, y)][0] for (x, y) in scores.keys() if i == x}
-        vals = sorted(list(curr_scores.values()), reverse=True)[0:sparsification]
+        vals = sorted(list(curr_scores.values()), reverse=True)[0:SPARSIFICATION]
         sparse_scores.update({key: val for key, val in curr_scores.items() if val in vals})
 
     createtsp.prepare_lkh(filename + '_sparse', len(reads),
