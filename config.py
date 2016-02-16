@@ -9,12 +9,12 @@ FILE = "/home/andreas/workspace/randomdnadatagenerator/NC_005816.gb"
 COVERAGES = [5, 20, 40]
 AVERAGE_LENGTH_LIST = [100, 400, 700, 1000]
 ALIGNMENT_TYPE = 'semiglobal'
-LENGTH_VARIANCE = 0.2 #\in [0,1]
-SORTED_READS = True
+LENGTH_VARIANCE = [0.0, 0.2]  # \in [0,1]
+SORTED_READS = [True, False]
 COVERAGES = [5, 20, 40]
 AVERAGE_LENGTH_LIST = [100, 400, 700, 1000]
 MIN_SCORE = 50
 SPARSIFICATION = 5
 CPUS = 6
 
-DIR = "/home/andreas/Dropbox/Masterarbeit/Data/sorted_{}_variance_{}_minscore_{}_alignment_{}/".format(SORTED_READS, LENGTH_VARIANCE, MIN_SCORE, ALIGNMENT_TYPE)
+DIR = "/home/andreas/Dropbox/Masterarbeit/Data/alignment_type_{}_min_score_{}/".format(ALIGNMENT_TYPE, MIN_SCORE)

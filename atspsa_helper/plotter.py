@@ -75,7 +75,11 @@ def make_align_matrix_plot():
         for key, value in dictmat.items():
             mat[key[0]][key[1]] = value
 
-        plt.matshow(mat)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        # plt.matshow(mat)
+        cax = ax.matshow(mat)
+        fig.colorbar(cax)
 
         plt.title(current_elem + ' max SW score')
         plt.grid(True)
@@ -102,7 +106,11 @@ def make_graph_matrix_plot():
         for key, value in scores.items():
             mat[key[0]][key[1]] = value
 
-        plt.matshow(mat)
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        # plt.matshow(mat)
+        cax = ax.matshow(mat)
+        fig.colorbar(cax)
 
         plt.title(current_elem + ' TSP graph ')
         plt.grid(True)

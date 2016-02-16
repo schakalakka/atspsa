@@ -21,7 +21,8 @@ def create_pure_random_data():
                 for i in range(nr_of_reads):
                     while True:
                         startindex = random.randint(0, mylength)
-                        length = average_length + random.randint(-average_length * LENGTH_VARIANCE, average_length * LENGTH_VARIANCE)
+                        length = average_length + random.randint(-average_length * LENGTH_VARIANCE,
+                                                                 average_length * LENGTH_VARIANCE)
                         endindex = int(min(startindex + length, mylength))
                         if endindex - startindex >= 30:
                             break
@@ -48,44 +49,52 @@ def create_obvious_initial_data():
                     if endindex - startindex >= 30:
                         currentseq = nuc_list[startindex:endindex]
                         handle.write(
-                                ">NC_005816_Yersinia_pestis_biovar_Microtus/{}/{}_{}\n".format(i + 1, startindex,
-                                                                                               endindex))
+                            ">NC_005816_Yersinia_pestis_biovar_Microtus/{}/{}_{}\n".format(i + 1, startindex,
+                                                                                           endindex))
                         handle.write("".join(currentseq) + "\n")
             os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
 
 
-def create_initial_data_with_sorting(sorted_reads=True):
+def create_initial_data():
     for coverage in COVERAGES:
         for average_length in AVERAGE_LENGTH_LIST:
-            nr_of_reads = int(mylength * coverage / average_length)
+            for lenvariance in LENGTH_VARIANCE:
+                for sorted_reads in SORTED_READS:
+                    nr_of_reads = int(mylength * coverage / average_length)
+                    dist_till_next_read = int(mylength / nr_of_reads)
+                    foo = "mkdir {}".format(DIR + "shuffled_c{}_l{}_sorted{}_variance{}".format(coverage,
+                                                                                                average_length,
+                                                                                                sorted_reads,
+                                                                                                lenvariance))
+                    os.system(foo)
+                    filename = DIR + "shuffled_c{}_l{}_sorted{}_variance{}/shuffled_c{}_l{}_sorted{}_variance{}".format(
+                        coverage, average_length,
+                        sorted_reads, lenvariance, coverage,
+                        average_length, sorted_reads, lenvariance)
+                    pre_list = []
+                    for i in range(nr_of_reads):
+                        startindex = random.randint(0, mylength)
+                        length = average_length + random.randint(-average_length * lenvariance,
+                                                                 average_length * lenvariance)
+                        pre_list.append((startindex, length))
 
-            dist_till_next_read = int(mylength / nr_of_reads)
-            foo = "mkdir {}".format(DIR + "shuffled_c{}_l{}".format(coverage, average_length))
-            os.system(foo)
-            filename = DIR + "shuffled_c{}_l{}/shuffled_c{}_l{}".format(coverage, average_length, coverage,
-                                                                        average_length)
-            pre_list = []
-            for i in range(nr_of_reads):
-                startindex = random.randint(0, mylength)
-                length = average_length + random.randint(-average_length * LENGTH_VARIANCE, average_length * LENGTH_VARIANCE)
-                pre_list.append((startindex, length))
-
-            if sorted_reads:
-                pre_list = sorted(pre_list, key=lambda tup: tup[0])
-            with open("{}.fasta".format(filename, nr_of_reads, average_length), "w") as handle:
-                for i, pre_elem in enumerate(pre_list):
-                    startindex = pre_elem[0]
-                    length = pre_elem[1]
-                    endindex = int(min(startindex + length, mylength))
-                    if endindex - startindex >= 30:
-                        currentseq = nuc_list[startindex:endindex]
-                        handle.write(
-                            ">NC_005816_Yersinia_pestis_biovar_Microtus/{}/{}_{}\n".format(i + 1, startindex, endindex))
-                        handle.write("".join(currentseq) + "\n")
-            os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
+                    if sorted_reads:
+                        pre_list = sorted(pre_list, key=lambda tup: tup[0])
+                    with open("{}.fasta".format(filename), "w") as handle:
+                        for i, pre_elem in enumerate(pre_list):
+                            startindex = pre_elem[0]
+                            length = pre_elem[1]
+                            endindex = int(min(startindex + length, mylength))
+                            if endindex - startindex >= 30:
+                                currentseq = nuc_list[startindex:endindex]
+                                handle.write(
+                                    ">NC_005816_Yersinia_pestis_biovar_Microtus/{}/{}_{}\n".format(i + 1,
+                                                                                                   startindex,
+                                                                                                   endindex))
+                                handle.write("".join(currentseq) + "\n")
+                    os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
 
 
-os.system("mkdir {}".format(DIR))
-
-#create_pure_random_data()
-create_initial_data_with_sorting(SORTED_READS)
+os.system('mkdir {}'.format(DIR))
+# create_pure_random_data()
+create_initial_data()
