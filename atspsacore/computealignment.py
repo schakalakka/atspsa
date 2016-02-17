@@ -39,15 +39,13 @@ def compute_scores(reads, filename):
                         else:
                             print('Huh?')
     else:
-        #compute alignment scores
-        #(index of read 1, index of read 2): (score, matrix row, matrix col)
-        temp_scores = {(i, j): (align(x, y, ALIGNMENT_TYPE)[2:5]) for i, x in enumerate(reads) for j, y in enumerate(reads) if i < j}
-        #discard all scores under threshold MIN_SCORE
+        # compute alignment scores
+        # (index of read 1, index of read 2): (score, matrix row, matrix col)
+        temp_scores = {(i, j): (align(x, y, ALIGNMENT_TYPE)[2:5]) for i, x in enumerate(reads) for j, y in
+                       enumerate(reads) if i < j}
+        # discard all scores under threshold MIN_SCORE
         temp_scores = {key: val for key, val in temp_scores.items() if val[0] >= MIN_SCORE}
-        #make scores directed according to the matrix index information
-
-
-
+        # make scores directed according to the matrix index information
 
     pre_alignstat = [(val[1], val[2]) for key, val in temp_scores.items()]
     alignstat = {elem: pre_alignstat.count(elem) for elem in set(pre_alignstat)}

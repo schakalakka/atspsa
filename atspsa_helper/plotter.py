@@ -122,6 +122,34 @@ def make_graph_matrix_plot():
         #plt.show()
 
 
+def make_coverage_graph():
+    dirs = os.listdir(DIR)
+    for current_elem in dirs:
+        curr_DIR = DIR + current_elem
+        os.chdir(curr_DIR)
+        filename = current_elem + ".fasta"
+        covered = [0] * len(myseq)
+        with open(filename, 'r') as f:
+            for line in f.readlines():
+                if line.startswith('>'):
+                    startindex = int(line.split('/')[2].split('_')[0]) - 1
+                    endindex = int(line.split('/')[2].split('_')[1].split('\n')[0])
+                    for i in range(startindex, endindex):
+                        covered[i] += 1
+
+        plt.figure()
+        plt.plot(covered)
+        plt.title(filename)
+        plt.grid(True)
+        plt.xticks(np.arange(0, len(covered), 1000))
+        # plt.yticks(xrange(0,max(nr_best_edge_used)+10, 5))
+        plt.ylabel("How often is it covered")
+        plt.xlabel("Whole sequence")
+        plt.savefig(filename + "_coverage_plot.pdf")
+
+
+
 # plot_all_with_sum()
-make_align_matrix_plot()
-make_graph_matrix_plot()
+# make_align_matrix_plot()
+# make_graph_matrix_plot()
+make_coverage_graph()
