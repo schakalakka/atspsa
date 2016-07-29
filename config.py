@@ -17,3 +17,5 @@ ref3 = 'ref3.fasta'
 ref1_name = 'Rous sarcoma virus'
 ref2_name = 'Vaccinia virus'
 ref3_name = 'Cand. Carsonella ruddii'
+references = [ref1_name, ref2_name, ref3_name]
+db_name = 'sqlite:///master.data'
