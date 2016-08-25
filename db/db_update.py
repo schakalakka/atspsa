@@ -2,7 +2,7 @@ import os
 
 from Bio import SeqIO
 from Bio.Alphabet import generic_dna
-from db_declarative import Reference, Base, Fasta, Read, Score
+from db_declarative import Reference, Base, Fasta, Read
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -14,40 +14,6 @@ Base.metadata.bin = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
-
-
-def read_score_file(file, alignment_type):
-    if os.path.exists(file):
-        print(file)
-        with open(file, 'r') as f:
-            f.readline()
-            filtered_reads = session.query(Read, Fasta).filter(Fasta.reference_id == ref) \
-                .filter(Fasta.coverage == c).filter(Fasta.length == l)
-            for line in f.readlines():
-                x, y, z, = line.split('\t')
-                old_tail = filtered_reads.filter(Read.index == int(x)).first().Read.id
-                old_head = filtered_reads.filter(Read.index == int(y)).first().Read.id
-                old_score = session.query(Score).filter_by(tail_id=old_tail, head_id=old_head).first()
-                if alignment_type == 'calign':
-                    new_score = Score(tail_id=old_tail, head_id=old_head, calign_score=int(z))
-                elif alignment_type == 'seqalign':
-                    new_score = Score(tail_id=old_tail, head_id=old_head, seq_align_score=int(z))
-                elif alignment_type == 'seq5align':
-                    new_score = Score(tail_id=old_tail, head_id=old_head, seq5_align_score=int(z))
-                elif alignment_type == 'seq20align':
-                    new_score = Score(tail_id=old_tail, head_id=old_head, seq20_align_score=int(z))
-                if old_score:
-                    new_score.id = old_score.id
-                session.merge(new_score)
-        session.commit()
-
-
-def read_score_files(file):
-    read_score_file(file + '.calignscore', 'calign')
-    read_score_file(file + '.seqscore', 'seqalign')
-    read_score_file(file + '_banded5.seqscore', 'seq5align')
-    read_score_file(file + '_banded20.seqscore', 'seq20align')
-
 
 def read_time_file(file):
     if os.path.exists(file):
@@ -96,5 +62,4 @@ for ref in [1, 2, 3]:
                     new_read.id = old_read.id
                 session.merge(new_read)
 
-                # read_score_files(file_name)
 session.commit()
