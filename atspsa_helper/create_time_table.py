@@ -1,3 +1,11 @@
+#################
+# reads all the .(c)act files in every directory and puts them in a dictionary
+# creates two line graph plots (currently not used because of tikz)
+# writes a CSV file alignmenttime_stats.csv containing the raw data in one file
+# additionally writes a .tex file alignmenttime_stats.tex containing a table
+#
+
+
 import os
 from collections import OrderedDict
 
@@ -100,7 +108,7 @@ def plotbanded(filename):
 
 
 def write_csv(filename):
-    csv = 'Nr\tRef\tCoverage\tLength\tSeqAn\tSeqAn_0_max\tSeqAn_m5_5\tSeqAn_m20_20\tSeqAn_0_5\tSeqAn_0_20\tCalign\n'
+    csv = 'Nr\tRef\tCoverage\tLength\tSeqAn\tSeqAn(0,max)\tSeqAn(-5,5)\tSeqAn(-20,20)\tSeqAn(0,5)\tSeqAn(0,20)\tCalign\n'
     counter = 1
     for ref in [1, 2, 3]:
         for coverage in coverages:
@@ -144,9 +152,9 @@ def write_csv(filename):
     print(output)
 
 
-def get_alignment_time(suffix='.act'):
-    if os.path.exists(DIR + 'ref{0}shuffled_c{1}_l{2}/shuffled_c{1}_l{2}'.format(ref, coverage, length) + suffix):
-        with open(DIR + 'ref{0}shuffled_c{1}_l{2}/shuffled_c{1}_l{2}'.format(ref, coverage, length) + suffix,
+def get_alignment_time(filename):
+    if os.path.exists(DIR + 'ref{0}shuffled_c{1}_l{2}/'.format(ref, coverage, length) + filename):
+        with open(DIR + 'ref{0}shuffled_c{1}_l{2}/'.format(ref, coverage, length) + filename,
                   'r') as f:
             align_time = float(f.read())
     else:
@@ -166,14 +174,14 @@ for ref in [1, 2, 3]:
     for coverage in coverages:
         for length in average_length_list:
             nr_of_reads = -1
-            seq_align_time = get_alignment_time('.act')
-            seq_m20_20_align_time = get_alignment_time('_banded_-20_20.act')
-            seq_m5_5_align_time = get_alignment_time('_banded_-5_5.act')
-            seq_0_20_align_time = get_alignment_time('_banded_0_20.act')
-            seq_0_5_align_time = get_alignment_time('_banded_0_5.act')
-            seq_0_max_align_time = get_alignment_time('_banded_0_max.act')
-            c_align_time = get_alignment_time('.cact')
-            with open(DIR + 'ref{0}shuffled_c{1}_l{2}/shuffled_c{1}_l{2}.stat'.format(ref, coverage, length),
+            seq_align_time = get_alignment_time('seqan.time')
+            seq_m20_20_align_time = get_alignment_time('seqan_-20_20.time')
+            seq_m5_5_align_time = get_alignment_time('seqan_-5_5.time')
+            seq_0_20_align_time = get_alignment_time('seqan_0_20.time')
+            seq_0_5_align_time = get_alignment_time('seqan_0_5.time')
+            seq_0_max_align_time = get_alignment_time('seqan_0_max.time')
+            c_align_time = get_alignment_time('calign.time')
+            with open(DIR + 'ref{0}shuffled_c{1}_l{2}/fasta_stats.txt'.format(ref, coverage, length),
                       'r') as f:
                 f.readline()
                 nr_of_reads = f.readline().split(': ')[1]
@@ -199,5 +207,5 @@ with open(DIR + 'alignmenttime' + '_stats.tex', 'w') as f:
 # print(output)
 
 write_csv(DIR + 'alignmenttime')
-plot(DIR + 'alignmenttime')
-plotbanded(DIR + 'bandedalignmenttime')
+# plot(DIR + 'alignmenttime')
+# plotbanded(DIR + 'bandedalignmenttime')
