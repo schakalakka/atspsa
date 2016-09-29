@@ -19,8 +19,8 @@ def pool_func(filename):
     os.chdir(curr_DIR)
     reads = parser.parse_fasta(filename)
     scores = db2score.read_ovl_file(filename)
-    createtsp.prepare_lkh(filename, len(reads),
-                          db2score.get_scores_without_orientation(scores))
+    createtsp.write_full_atsp(filename, len(reads),
+                              db2score.get_scores_without_orientation(scores))
 
     sparse_scores = {}
     for i, elem in enumerate(reads):
@@ -28,8 +28,8 @@ def pool_func(filename):
         vals = sorted(list(curr_scores.values()), reverse=True)[0:SPARSIFICATION]
         sparse_scores.update({key: val for key, val in curr_scores.items() if val in vals})
 
-    createtsp.prepare_lkh(filename + '_sparse', len(reads),
-                          sparse_scores)
+    createtsp.write_full_atsp(filename + '_sparse', len(reads),
+                              sparse_scores)
 
 
 pool = Pool(processes=CPUS)

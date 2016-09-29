@@ -9,7 +9,7 @@ QUALITY_THRESHOLDS = [0, 0.7, 0.9, 0.99]
 ALIGNERS = ['SeqAn', 'SeqAn(0,max)', 'SeqAn(-5,5)', 'SeqAn(-20,20)', 'SeqAn(0,5)', 'SeqAn(0,20)', 'Calign']
 
 
-def read_file(file, np_arr, k):
+def read_score_file(file, np_arr, k):
     with open(file, 'r') as f:
         f.readline()
         for line in f.readlines():
@@ -17,12 +17,12 @@ def read_file(file, np_arr, k):
             np_arr[k][i][j] = val
 
 
-def read_files(*args):
+def read_score_files(*args):
     with open(args[0], 'r') as f:
         nr_reads = int(f.readline())
     np_arr = np.zeros((len(args), nr_reads, nr_reads), dtype=np.uint16)
     for k, arg in enumerate(args):
-        read_file(arg, np_arr, k)
+        read_score_file(arg, np_arr, k)
     return np_arr
 
 
@@ -80,7 +80,7 @@ def write_average_edge_stats(read_length_string='') -> None:
 for ref in [1]:
     for coverage in [5, 20, 40]:
         for length in [100, 400, 700]:
-            np_arr = read_files(
+            np_arr = read_score_files(
                 DIR + 'ref{0}shuffled_c{1}_l{2}/seqan.score'.format(ref, coverage, length),
                 DIR + 'ref{0}shuffled_c{1}_l{2}/seqan_0_max.score'.format(ref, coverage, length),
                 DIR + 'ref{0}shuffled_c{1}_l{2}/seqan_-5_5.score'.format(ref, coverage, length),

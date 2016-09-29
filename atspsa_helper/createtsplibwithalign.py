@@ -21,7 +21,7 @@ def pool_func(filename):
     reads = parser.parse_fasta(filename)
     scores = computealignment.compute_scores(reads, filename)
     computealignment.write_align_file(filename, scores)
-    createtsp.prepare_lkh(filename, len(reads), scores)
+    createtsp.write_full_atsp(filename, len(reads), scores)
 
     # sparse_scores = {}
     # for i, elem in enumerate(reads):

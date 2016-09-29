@@ -1,5 +1,4 @@
-def prepare_lkh(filename, nr_of_reads, scores):
-    print("Preparing for LKH")
+def write_full_atsp(filename, nr_of_reads, scores):
     tsplib_par_string = "PROBLEM_FILE={}\nOUTPUT_TOUR_FILE={}\nTOUR_FILE={}".format(filename + ".atsp",
                                                                                     filename + ".tour",
                                                                                     filename + ".tour")
@@ -18,7 +17,7 @@ def prepare_lkh(filename, nr_of_reads, scores):
         f.write('\n' + '\t'.join('0' for _ in range(nr_of_reads + 1)))
 
         for i in range(nr_of_reads):
-            f.write('\n' + '\t'.join([str(-scores.get((i, j), 0)) for j in range(-1, nr_of_reads)]))
+            row = ['0', *[str(-scores[i][j]) for j in range(0, nr_of_reads)]]
+            f.write('\n' + '\t'.join(row))
 
         f.write("\nEOF")
-    print("Preparing for LKH finished.")
