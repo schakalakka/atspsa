@@ -69,7 +69,7 @@ def plot(prelist, filename, coverage, average_length):
     plt.close()
 
 
-def create_reads_shotgun_style(ref):
+def create_reads_shotgun_style(ref, ref_nr):
     '''
     create reads shotgun sequencing style
     :param ref:
@@ -93,7 +93,8 @@ def create_reads_shotgun_style(ref):
                     hits.append(random.randint(0, ref_length))
                 hits = sorted(hits)
                 foolist = [(hits[i], hits[i + 1] - hits[i]) for i in range(len(hits) - 1)
-                           if minimum_length <= hits[i + 1] - hits[i] <= maximum_length * average_length]
+                           if
+                           minimum_length * average_length <= hits[i + 1] - hits[i] <= maximum_length * average_length]
                 pre_list = pre_list + foolist
             pre_list = sorted(pre_list, key=lambda tup: tup[0])
             with open("{}.stat".format(filename), "w") as handle:
@@ -120,20 +121,20 @@ def create_reads_shotgun_style(ref):
                     max([tup[1] for tup in pre_list])
                 )
             with open("{}.fasta".format(filename), "w") as handle:
-                for pre_elem in pre_list:
+                for i, pre_elem in enumerate(pre_list):
                     startindex = pre_elem[0]
                     length = pre_elem[1]
                     endindex = int(min(startindex + length, ref_length))
                     if endindex - startindex >= 30:
                         currentseq = nuc_list[startindex:endindex]
                         handle.write(
-                            ">NC_005816_Yersinia_pestis_biovar_Microtus/{}/{}_{}\n".format(i + 1, startindex, endindex))
+                            ">{}/{}/{}_{}\n".format(references[ref_nr].replace(' ', '-'), i, startindex, endindex))
                         handle.write("".join(currentseq) + "\n")
                         # os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
             plot(pre_list, filename, coverage, average_length)
     make_latex_stat_table(stats, ref)
 
 
-create_reads_shotgun_style(ref1)
-create_reads_shotgun_style(ref2)
-create_reads_shotgun_style(ref3)
+create_reads_shotgun_style(ref1, 0)
+create_reads_shotgun_style(ref2, 1)
+create_reads_shotgun_style(ref3, 2)
