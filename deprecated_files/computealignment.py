@@ -1,7 +1,6 @@
 import pickle
-from ext_calign import *
 
-from config import *
+from ext_calign import *
 
 
 def read_align_file(filename):

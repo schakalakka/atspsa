@@ -15,17 +15,18 @@ def create_reads(ref):
         for average_length in average_length_list:
             nr_of_reads = int(mylength * coverage / average_length)
             dist_till_next_read = int(mylength / nr_of_reads)
-            foo = "mkdir {}".format(DIR + ref.split('.')[0] + "shuffled_c{}_l{}".format(coverage, average_length))
+            foo = "mkdir {}".format(DIR + ref.split('.')[0] + "_c{}_l{}".format(coverage, average_length))
             os.system(foo)
-            filename = DIR + ref.split('.')[0] + "shuffled_c{0}_l{1}/shuffled_c{0}_l{1}".format(coverage,
-                                                                                                average_length)
+            filename = DIR + ref.split('.')[0] + "_c{0}_l{1}/reads.fasta".format(coverage,
+                                                                                 average_length)
             pre_list = []
             for i in range(nr_of_reads):
                 startindex = random.randint(0, mylength)
                 length = average_length + random.randint(-average_length * variance, average_length * variance)
                 pre_list.append((startindex, length))
             pre_list = sorted(pre_list, key=lambda tup: tup[0])
-            with open("{}.fasta".format(filename, nr_of_reads, average_length), "w") as handle:
+            # write fasta
+            with open(filename, "w") as handle:
                 for pre_elem in pre_list:
                     startindex = pre_elem[0]
                     length = pre_elem[1]
@@ -38,22 +39,7 @@ def create_reads(ref):
                         # os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
 
 
-def make_latex_stat_table(stats, ref):
-    output = '\\begin{tabular}{|c|c|c|c|c|c|}\\hline\n& \\multicolumn{4}{c|}{Read Length} & \\\\\nCoverage & Average & Median & Shortest' \
-             '& Longest & \\#Reads \\\\\n\\hline\n'
-    for coverage in coverages:
-        for average_length in average_length_list:
-            val = stats[(coverage, average_length)]
-            output = output + '{0:.1f} & {1:.1f} & {2} & {3} & {4} & {5} \\\\\n'.format(val[0], val[2], val[3],
-                                                                                        val[4], val[5], val[1])
-        output = output + '\\hline\n'
-    output = output + '\\end{tabular}'
-    with open(DIR + ref.split('.')[0] + '_stats.tex', 'w') as f:
-        f.write(output)
-    print(output)
-
-
-def plot(prelist, filename, coverage, average_length):
+def plot(prelist, sub_dir, coverage, average_length):
     # plt.figure()
     plt.title("Coverage: {}, Average Length: {}, Reads: {}\nReads below average: {}, Reads above average: {}".format(
         coverage, average_length, len(prelist), len([x for x in prelist if x[1] < average_length]),
@@ -65,8 +51,9 @@ def plot(prelist, filename, coverage, average_length):
     # plt.yticks(xrange(0,max(nr_best_edge_used)+10, 5))
     plt.ylabel("Frequency")
     plt.xlabel("Read Length")
-    plt.savefig(filename + "_plot.pdf")
+    plt.savefig(DIR + sub_dir + "plot.pdf")
     plt.close()
+
 
 
 def create_reads_shotgun_style(ref, ref_nr):
@@ -82,59 +69,54 @@ def create_reads_shotgun_style(ref, ref_nr):
         nuc_list = list(ref_seq)
     for coverage in coverages:
         for average_length in average_length_list:
-            nr_of_shots = int(ref_length / average_length)
-            os.system("mkdir {}".format(DIR + ref.split('.')[0] + "shuffled_c{}_l{}".format(coverage, average_length)))
-            filename = DIR + ref.split('.')[0] + "shuffled_c{0}_l{1}/shuffled_c{0}_l{1}".format(coverage,
-                                                                                                average_length)
-            pre_list = []
-            while sum([tup[1] for tup in pre_list]) < coverage * ref_length:
-                hits = [random.randint(0, 20)]  # stores the hits of the shotgun sequence in on run
-                for i in range(nr_of_shots):
-                    hits.append(random.randint(0, ref_length))
-                hits = sorted(hits)
-                foolist = [(hits[i], hits[i + 1] - hits[i]) for i in range(len(hits) - 1)
-                           if
-                           minimum_length * average_length <= hits[i + 1] - hits[i] <= maximum_length * average_length]
-                pre_list = pre_list + foolist
-            pre_list = sorted(pre_list, key=lambda tup: tup[0])
-            with open("{}.stat".format(filename), "w") as handle:
-                handle.write('Real Coverage: {}\n'
-                             'Number of reads: {}\n'
-                             'Average read length: {}\n'
-                             'Median read length: {}\n'
-                             'Shortest read length" : {}\n'
-                             'Longest read length: {}'.format(
-                    sum([tup[1] for tup in pre_list]) / ref_length,
-                    len(pre_list),
-                    sum([tup[1] for tup in pre_list]) / len(pre_list),
-                    sorted([tup[1] for tup in pre_list])[len(pre_list) // 2],
-                    min([tup[1] for tup in pre_list]),
-                    max([tup[1] for tup in pre_list])
-                ))
-                # save stats in dict for later creation of latex table
-                stats[(coverage, average_length)] = (
-                    sum([tup[1] for tup in pre_list]) / ref_length,
-                    len(pre_list),
-                    sum([tup[1] for tup in pre_list]) / len(pre_list),
-                    sorted([tup[1] for tup in pre_list])[len(pre_list) // 2],
-                    min([tup[1] for tup in pre_list]),
-                    max([tup[1] for tup in pre_list])
-                )
-            with open("{}.fasta".format(filename), "w") as handle:
-                for i, pre_elem in enumerate(pre_list):
-                    startindex = pre_elem[0]
-                    length = pre_elem[1]
+            sub_dir = ref.split('.')[0] + "_c{0}_l{1}/".format(coverage, average_length)
+            os.system("mkdir {}".format(DIR + sub_dir))
+            meta_read_list = []  # list indicating the start and the length of a read -> (start_index,length)
+
+            while sum(x[1] for x in meta_read_list) < coverage * ref_length:
+                start_index = random.randint(0, ref_length)
+                length = random.randint(average_length - average_length * variance,
+                                        average_length + average_length * variance)
+                if start_index + length <= ref_length and (start_index, length) not in meta_read_list:
+                    meta_read_list.append((start_index, length))
+            # sort by start index
+            meta_read_list = sorted(meta_read_list, key=lambda x: -x[1])
+            meta_read_list = sorted(meta_read_list, key=lambda x: x[0])
+            # write fasta file
+            with open(DIR + sub_dir + "reads.fasta", "w") as handle:
+                for i, elem in enumerate(meta_read_list):
+                    startindex = elem[0]
+                    length = elem[1]
                     endindex = int(min(startindex + length, ref_length))
-                    if endindex - startindex >= 30:
-                        currentseq = nuc_list[startindex:endindex]
-                        handle.write(
-                            ">{}/{}/{}_{}\n".format(references[ref_nr].replace(' ', '-'), i, startindex, endindex))
-                        handle.write("".join(currentseq) + "\n")
-                        # os.system("{}fasta2DB -v {} {}.fasta".format(DAZZ_DB, filename, filename))
-            plot(pre_list, filename, coverage, average_length)
-    make_latex_stat_table(stats, ref)
+                    currentseq = nuc_list[startindex:endindex]
+                    handle.write(
+                        '>{}/{}/{}_{}_{}\n'.format(references[ref_nr].replace(' ', '-'), i, startindex, endindex,
+                                                   length))
+                    handle.write(''.join(currentseq) + '\n')
+
+            # write fasta stats
+            # with open(DIR + sub_dir + "fasta.stat", "w") as handle:
+            #     real_coverage = sum([x[1] for x in meta_read_list]) / ref_length
+            #     nr_reads = len(meta_read_list)
+            #     average = sum([x[1] for x in meta_read_list]) / len(meta_read_list)
+            #     median = sorted([x[1] for x in meta_read_list])[len(meta_read_list) // 2]
+            #     shortest = min([x[1] for x in meta_read_list])
+            #     longest = max([x[1] for x in meta_read_list])
+            #     target_value = compute_target_function_value_of_fasta(DIR+sub_dir+'reads.fasta')
+            #     handle.write('Real Coverage: {}\n'
+            #                  'Number of reads: {}\n'
+            #                  'Average read length: {}\n'
+            #                  'Median read length: {}\n'
+            #                  'Shortest read length" : {}\n'
+            #                  'Longest read length: {}\n'
+            #                  'Target function value: {}'.format(real_coverage, nr_reads, average, median, shortest, longest, target_value))
+            #     # save stats in dict for later creation of latex table
+            #     stats[(coverage, average_length)] = (real_coverage, nr_reads, average, median, shortest, longest, target_value)
+
+            plot(meta_read_list, sub_dir, coverage, average_length)
+            # make_latex_stat_table(stats, ref)
 
 
 create_reads_shotgun_style(ref1, 0)
 create_reads_shotgun_style(ref2, 1)
-create_reads_shotgun_style(ref3, 2)
+# create_reads_shotgun_style(ref3, 2)

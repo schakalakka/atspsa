@@ -81,18 +81,18 @@ for ref in [1]:
     for coverage in [5, 20, 40]:
         for length in [100, 400, 700]:
             np_arr = read_score_files(
-                DIR + 'ref{0}shuffled_c{1}_l{2}/seqan.score'.format(ref, coverage, length),
-                DIR + 'ref{0}shuffled_c{1}_l{2}/seqan_0_max.score'.format(ref, coverage, length),
-                DIR + 'ref{0}shuffled_c{1}_l{2}/seqan_-5_5.score'.format(ref, coverage, length),
-                DIR + 'ref{0}shuffled_c{1}_l{2}/seqan_-20_20.score'.format(ref, coverage, length),
-                DIR + 'ref{0}shuffled_c{1}_l{2}/seqan_0_5.score'.format(ref, coverage, length),
-                DIR + 'ref{0}shuffled_c{1}_l{2}/seqan_0_20.score'.format(ref, coverage, length),
-                DIR + 'ref{0}shuffled_c{1}_l{2}/calign.score'.format(ref, coverage, length))
+                DIR + 'ref{0}_c{1}_l{2}/seqan.score'.format(ref, coverage, length),
+                DIR + 'ref{0}_c{1}_l{2}/seqan_0_max.score'.format(ref, coverage, length),
+                DIR + 'ref{0}_c{1}_l{2}/seqan_-5_5.score'.format(ref, coverage, length),
+                DIR + 'ref{0}_c{1}_l{2}/seqan_-20_20.score'.format(ref, coverage, length),
+                DIR + 'ref{0}_c{1}_l{2}/seqan_0_5.score'.format(ref, coverage, length),
+                DIR + 'ref{0}_c{1}_l{2}/seqan_0_20.score'.format(ref, coverage, length),
+                DIR + 'ref{0}_c{1}_l{2}/calign.score'.format(ref, coverage, length))
             absolute_number_of_high_quality_edges, relative_number_of_high_quality_edges = compare_degree_of_nodes(
                 np_arr)
-            write_csv(DIR + 'ref{0}shuffled_c{1}_l{2}/absolute_edge_comparison.csv'.format(ref, coverage, length),
+            write_csv(DIR + 'ref{0}_c{1}_l{2}/absolute_edge_comparison.csv'.format(ref, coverage, length),
                       absolute_number_of_high_quality_edges)
-            write_csv(DIR + 'ref{0}shuffled_c{1}_l{2}/relative_edge_comparison.csv'.format(ref, coverage, length),
+            write_csv(DIR + 'ref{0}_c{1}_l{2}/relative_edge_comparison.csv'.format(ref, coverage, length),
                       relative_number_of_high_quality_edges)
 write_average_edge_stats()
 write_average_edge_stats('100')

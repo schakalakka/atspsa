@@ -1,3 +1,4 @@
+import glob
 import os
 import time
 from collections import namedtuple
@@ -13,7 +14,7 @@ from config import *
 
 Node = namedtuple('Node', ['id', 'sequence', 'start_index', 'end_index', 'previous_node', 'next_node', 'length'])
 
-circular = True
+circular = False
 
 
 def align(seq1: str, seq2: str) -> str:
@@ -42,7 +43,7 @@ def create_list_of_nodes(reads: List[Tuple[str, str]], tour: List[int], inclusio
     # for i, read in enumerate(reads):
     for i, tour_elem in enumerate(tour):
         read = filtered_reads[tour_elem]
-        start_index, end_index = read[0].split('/')[-1].split('_')
+        start_index, end_index, length = read[0].split('/')[-1].split('_')
         if i < len(tour) - 1:
             next_node = tour[i + 1]
         else:
@@ -53,7 +54,7 @@ def create_list_of_nodes(reads: List[Tuple[str, str]], tour: List[int], inclusio
             previous_node = -1
         nodes.append(
             Node(tour_elem, read[1], int(start_index), int(end_index), previous_node, next_node,
-                 int(end_index) - int(start_index)))
+                 int(length)))
     nodes = sorted(nodes, key=lambda x: tour.index(x.id))
     return nodes
 
@@ -66,7 +67,7 @@ def compare_tours(tour, scores):
     :param scores:
     :return:
     """
-    # scores[scores < 30] = -99999
+    scores[scores < MINIMAL_OVERLAP_SCORE] = -BIG_M_WEIGHT
     should_be_tour_value = 0
     should_be_value_list = []
     lkh_tour_value = 0
@@ -182,7 +183,7 @@ def make_new_lkh_run(filename: str, scores: np.ndarray, circular=False) -> None:
     return
 
 
-def look_for_included_reads(reads: List[Tuple[str]], scores: np.ndarray) -> List[int]:
+def look_for_included_reads(reads: List[str], scores: np.ndarray) -> List[int]:
     """
     filters all the reads which are included in another sequence
     :param reads: list of reads of the form List[sequence]
@@ -250,7 +251,7 @@ def assemble_cycles(reads: List[str], cycles: List[Set[int]], col_ind: np.ndarra
     return contig_list
 
 
-def munkres(reads: List[str], scores: np.ndarray) -> Tuple[List[str], float]:
+def munkres(reads: List[str], scores: np.ndarray) -> Tuple[List[str], float, int]:
     """
     applying the (negative) scores matrix to the munkres/linear_sum_assignment algorithm
     we detect the cycles and assemble them afterwards
@@ -259,15 +260,17 @@ def munkres(reads: List[str], scores: np.ndarray) -> Tuple[List[str], float]:
     :return:
     """
     start_time_ap = time.time()
-    # scores[scores < MINIMAL_OVERLAP_SCORE] = 0
+    scores[scores < MINIMAL_OVERLAP_SCORE] = 0
     row_ind, col_ind = linear_sum_assignment(np.negative(scores))
-    # print('Cost: ', scores[row_ind, col_ind].sum())
     cycles = detect_cycles(col_ind)
+    # we substract from the ap_value BIG_M_WEIGHT*(len(cycles)-1) to get the actual value
+    ap_value = scores[row_ind, col_ind].sum() - BIG_M_WEIGHT * (len(cycles) - 1)
     contig_list = assemble_cycles(reads, cycles, col_ind, scores)
+
     end_time_ap = time.time()
     print(contig_list)
     print(end_time_ap - start_time_ap)
-    return contig_list, end_time_ap - start_time_ap
+    return contig_list, end_time_ap - start_time_ap, ap_value
 
 
 def assemble_tour(nodes: List[Node], scores: np.ndarray) -> List[str]:
@@ -291,7 +294,8 @@ def assemble_tour(nodes: List[Node], scores: np.ndarray) -> List[str]:
     return [''.join(contig) for contig in contig_list]
 
 
-def lkh_assemble(reads: List[Tuple[str, str]], inclusions: List[int], scores: np.ndarray) -> Tuple[List[str], float]:
+def lkh_assemble(reads: List[Tuple[str, str]], inclusions: List[int], scores: np.ndarray) -> Tuple[
+    List[str], float, int]:
     """
     starting lkh run (i.e. calling make_new_lkh_run)
     parses the output tour and creates a List[Node]
@@ -304,6 +308,9 @@ def lkh_assemble(reads: List[Tuple[str, str]], inclusions: List[int], scores: np
     start_time_tsp = time.time()
     make_new_lkh_run('/home/andreas/GDrive/workspace/atspsa/footest', scores, circular)
     tour = parser.parse_tour('/home/andreas/GDrive/workspace/atspsa/footest.tour', circular)
+    with open('/home/andreas/GDrive/workspace/atspsa/footest.tour', 'r') as f:
+        tsp_value = -int(
+            [x.split('COMMENT : Length = ')[1] for x in f.readlines() if x.startswith('COMMENT : Length = ')][0])
     nodes = create_list_of_nodes(reads, tour, inclusions)
     tsp_contigs = assemble_tour(nodes, scores)
     # contig_list, inclusions = check_for_gaps(nodes, scores, tour)
@@ -312,7 +319,7 @@ def lkh_assemble(reads: List[Tuple[str, str]], inclusions: List[int], scores: np
     # compare_tours(tour, scores)
     end_time_tsp = time.time()
     print(end_time_tsp - start_time_tsp)
-    return tsp_contigs, end_time_tsp - start_time_tsp
+    return tsp_contigs, end_time_tsp - start_time_tsp, tsp_value
 
 
 def assemble(fasta_file: str, score_file: str):
@@ -327,30 +334,32 @@ def assemble(fasta_file: str, score_file: str):
     # read scores, reads
     nr_of_reads, scores = read_score_file.read_score_file(score_file)
     reads = parser.parse_fasta_with_id(fasta_file)
-    reads_seqs = parser.parse_fasta(fasta_file)
     # detect inclusions
-    inclusions = look_for_included_reads(reads_seqs, scores)
+    inclusions = look_for_included_reads([read[1] for i, read in enumerate(reads)], scores)
     # reduce the scores matrix
     reduced_scores = remove_included_reads_in_scores(scores, inclusions)
 
     # TSP
-    lkh_contigs, lkh_time = lkh_assemble(reads, inclusions, reduced_scores)
+    lkh_contigs, lkh_time, lkh_value = lkh_assemble(reads, inclusions, reduced_scores)
 
     # Assignment problem
     reduced_reads = [read[1] for i, read in enumerate(reads) if i not in inclusions]
-    ap_contigs, ap_time = munkres(reduced_reads, reduced_scores)
+    ap_contigs, ap_time, ap_value = munkres(reduced_reads, reduced_scores)
     with open(score_file.split('.score')[0] + '.assembly', 'w') as f:
         f.write('LKH: Circular: {}\nLKH_Contigs:\n'.format(circular))
         f.write('\n'.join(lkh_contigs))
-        f.write('\nLKH_Time: {}\n'.format(lkh_time))
+        f.write('\nLKH_Objective_Value: {}\n'.format(lkh_value))
+        f.write('LKH_Time: {}\n'.format(lkh_time))
         f.write('Assignment Problem:\nAP_Contigs:\n')
         f.write('\n'.join(ap_contigs))
+        f.write('\nAP_Objective_Value: {}'.format(ap_value))
         f.write('\nAP_Time: {}'.format(ap_time))
 
 
 if __name__ == "__main__":
-    file = '/home/andreas/GDrive/workspace/sparsedata/ref1shuffled_c5_l700/calign.score'
-    fasta_file = '/home/andreas/GDrive/workspace/sparsedata/ref1shuffled_c5_l700/shuffled_c5_l700.fasta'
-    # for file in glob.glob('/home/andreas/GDrive/workspace/sparsedata/ref*/calign.score'):
-    #     fasta_file = glob.glob(file.split('calign.score')[0] + '*.fasta')[0]
-    assemble(fasta_file, file)
+    # file = '/home/andreas/GDrive/workspace/sparsedata/ref1_c5_l100/calign.score'
+    # fasta_file = '/home/andreas/GDrive/workspace/sparsedata/ref1_c5_l100/reads.fasta'
+    for file in sorted(glob.glob('/home/andreas/GDrive/workspace/sparsedata/ref2_c*/calign.score')):
+        print(file)
+        fasta_file = glob.glob(file.split('calign.score')[0] + '*.fasta')[0]
+        assemble(fasta_file, file)

@@ -2,10 +2,10 @@ import os
 import time
 from multiprocessing import Pool
 
-from atspsacore import computealignment
 from atspsacore import createtsp
 from atspsacore import parser
 from config import *
+from deprecated_files import computealignment
 
 
 def filter_score(scores, n):

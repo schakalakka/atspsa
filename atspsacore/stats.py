@@ -3,7 +3,7 @@ __author__ = 'andreas'
 import parser
 from collections import defaultdict
 
-from atspsacore import db2score
+from deprecated_files import db2score
 
 
 def make_stat(filename):

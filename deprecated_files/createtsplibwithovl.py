@@ -2,9 +2,9 @@ import os
 from multiprocessing import Pool
 
 from atspsacore import createtsp
-from atspsacore import db2score
 from atspsacore import parser
 from config import *
+from deprecated_files import db2score
 
 
 def filter_score(scores, n):
