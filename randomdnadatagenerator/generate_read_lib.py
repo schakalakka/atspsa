@@ -69,7 +69,7 @@ def create_reads_shotgun_style(ref, ref_nr):
         nuc_list = list(ref_seq)
     for coverage in coverages:
         for average_length in average_length_list:
-            sub_dir = ref.split('.')[0] + "_c{0}_l{1}/".format(coverage, average_length)
+            sub_dir = ref.split('.')[0] + "ref{0}_c{1}_l{2}/".format(ref_nr + 1, coverage, average_length)
             os.system("mkdir {}".format(DIR + sub_dir))
             meta_read_list = []  # list indicating the start and the length of a read -> (start_index,length)
 
@@ -83,19 +83,19 @@ def create_reads_shotgun_style(ref, ref_nr):
             meta_read_list = sorted(meta_read_list, key=lambda x: -x[1])
             meta_read_list = sorted(meta_read_list, key=lambda x: x[0])
             # write fasta file
-            with open(DIR + sub_dir + "reads.fasta", "w") as handle:
+            with open(DIR + sub_dir + "reads.fasta", "w") as f:
                 for i, elem in enumerate(meta_read_list):
                     startindex = elem[0]
                     length = elem[1]
-                    endindex = int(min(startindex + length, ref_length))
+                    endindex = startindex + length
                     currentseq = nuc_list[startindex:endindex]
-                    handle.write(
+                    f.write(
                         '>{}/{}/{}_{}_{}\n'.format(references[ref_nr].replace(' ', '-'), i, startindex, endindex,
                                                    length))
-                    handle.write(''.join(currentseq) + '\n')
+                    f.write(''.join(currentseq) + '\n')
 
             # write fasta stats
-            # with open(DIR + sub_dir + "fasta.stat", "w") as handle:
+                    # with open(DIR + sub_dir + "fasta.stat", "w") as f:
             #     real_coverage = sum([x[1] for x in meta_read_list]) / ref_length
             #     nr_reads = len(meta_read_list)
             #     average = sum([x[1] for x in meta_read_list]) / len(meta_read_list)
@@ -103,7 +103,7 @@ def create_reads_shotgun_style(ref, ref_nr):
             #     shortest = min([x[1] for x in meta_read_list])
             #     longest = max([x[1] for x in meta_read_list])
             #     target_value = compute_target_function_value_of_fasta(DIR+sub_dir+'reads.fasta')
-            #     handle.write('Real Coverage: {}\n'
+                    #     f.write('Real Coverage: {}\n'
             #                  'Number of reads: {}\n'
             #                  'Average read length: {}\n'
             #                  'Median read length: {}\n'
@@ -113,10 +113,9 @@ def create_reads_shotgun_style(ref, ref_nr):
             #     # save stats in dict for later creation of latex table
             #     stats[(coverage, average_length)] = (real_coverage, nr_reads, average, median, shortest, longest, target_value)
 
-            plot(meta_read_list, sub_dir, coverage, average_length)
+                    # plot(meta_read_list, sub_dir, coverage, average_length)
             # make_latex_stat_table(stats, ref)
 
-
-create_reads_shotgun_style(ref1, 0)
-create_reads_shotgun_style(ref2, 1)
+# create_reads_shotgun_style(ref1, 0)
+# create_reads_shotgun_style(ref2, 1)
 # create_reads_shotgun_style(ref3, 2)

@@ -153,8 +153,8 @@ def write_csv(filename):
 
 
 def get_alignment_time(filename):
-    if os.path.exists(DIR + 'ref{0}shuffled_c{1}_l{2}/'.format(ref, coverage, length) + filename):
-        with open(DIR + 'ref{0}shuffled_c{1}_l{2}/'.format(ref, coverage, length) + filename,
+    if os.path.exists(DIR + 'ref{0}_c{1}_l{2}/'.format(ref, coverage, length) + filename):
+        with open(DIR + 'ref{0}_c{1}_l{2}/'.format(ref, coverage, length) + filename,
                   'r') as f:
             align_time = float(f.read())
     else:
@@ -181,7 +181,7 @@ for ref in [1, 2, 3]:
             seq_0_5_align_time = get_alignment_time('seqan_0_5.time')
             seq_0_max_align_time = get_alignment_time('seqan_0_max.time')
             c_align_time = get_alignment_time('calign.time')
-            with open(DIR + 'ref{0}shuffled_c{1}_l{2}/fasta_stats.txt'.format(ref, coverage, length),
+            with open(DIR + 'ref{0}_c{1}_l{2}/fasta_stats.txt'.format(ref, coverage, length),
                       'r') as f:
                 f.readline()
                 nr_of_reads = f.readline().split(': ')[1]

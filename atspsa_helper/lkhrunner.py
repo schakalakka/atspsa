@@ -6,7 +6,7 @@ from config import *
 
 
 def run_lkh(lkh_par_file):
-    os.system("{}LKH {} >> {}".format(LKH_EXE, lkh_par_file, lkh_par_file.split('.par')[0] + '.out'))
+    os.system("{}LKH {} > {}".format(LKH_EXE, lkh_par_file, lkh_par_file.split('.par')[0] + '.out'))
 
 
 def pool_func(file):

@@ -1,6 +1,6 @@
 ####################
 # reads the alignmenttime_stats.csv
-#   containing the time for every alignment method (SeqAn, Calign, SeqAn banded)
+#   containing the time for every alignment method (Calign, calign25, Calign50)
 #
 # creates alignmentcomparison.csv
 #   result is a table
@@ -12,7 +12,7 @@ import csv
 from config import *
 
 stats = []
-with open(DIR + 'alignmenttime_stats.csv', 'r') as f:
+with open(DIR + 'alignmenttime.csv', 'r') as f:
     f_csv = csv.reader(f, delimiter='\t')
     headers = next(f_csv)
     # Row = namedtuple('Row', headers)
@@ -28,7 +28,7 @@ with open(DIR + 'alignmenttime_stats.csv', 'r') as f:
             current_rows = [x for x in rowlist if x[3] == str(length) and x[4] != '-1' and x[i + 5] != '-1']
             numerator = 0
             for row in current_rows:
-                numerator += int(row[4]) / int(row[5 + i])
+                numerator += float(row[4]) / float(row[5 + i])
             current_stat[str(length)] = round(numerator / len(current_rows))
         stats.append(current_stat)
 

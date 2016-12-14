@@ -1,15 +1,17 @@
 import csv
 import glob
+import os
+from typing import List
 
 import numpy as np
 
 from config import *
 
 QUALITY_THRESHOLDS = [0, 0.7, 0.9, 0.99]
-ALIGNERS = ['SeqAn', 'SeqAn(0,max)', 'SeqAn(-5,5)', 'SeqAn(-20,20)', 'SeqAn(0,5)', 'SeqAn(0,20)', 'Calign']
+ALIGNERS = ['Calign', 'Calign25', 'Calign50']
 
 
-def read_score_file(file, np_arr, k):
+def read_score_file(file: str, np_arr: np.ndarray, k: int):
     with open(file, 'r') as f:
         f.readline()
         for line in f.readlines():
@@ -17,7 +19,7 @@ def read_score_file(file, np_arr, k):
             np_arr[k][i][j] = val
 
 
-def read_score_files(*args):
+def read_score_files(*args) -> np.ndarray:
     with open(args[0], 'r') as f:
         nr_reads = int(f.readline())
     np_arr = np.zeros((len(args), nr_reads, nr_reads), dtype=np.uint16)
@@ -46,7 +48,7 @@ def compare_degree_of_nodes(np_arr):
     return absolute_number_of_high_quality_edges, relative_number_of_high_quality_edges
 
 
-def write_csv(filename, arr) -> None:
+def write_csv(filename: str, arr: List) -> None:
     headers = ['Number', 'Aligner', *QUALITY_THRESHOLDS]
     rows = [[i, aligner, *[arr[j][i] for j, threshold in enumerate(QUALITY_THRESHOLDS)]] for i, aligner in
             enumerate(ALIGNERS)]
@@ -73,21 +75,52 @@ def write_average_edge_stats(read_length_string='') -> None:
         f_csv = csv.writer(f, delimiter='\t')
         f_csv.writerow(headers)
         rows = [[i, aligner, *[average_edge_stats[i][j] for j, threshold in enumerate(QUALITY_THRESHOLDS)]] for
-                i, aligner in enumerate(ALIGNERS) if aligner != 'SeqAn']
+                i, aligner in enumerate(ALIGNERS) if aligner != 'Calign']
         f_csv.writerows(rows)
+
+
+def get_alignment_time(filename: str) -> float:
+    if os.path.exists(filename):
+        with open(filename, 'r') as f:
+            align_time = float(f.read())
+    else:
+        align_time = -1
+    return align_time
+
+
+def write_alignment_time_stats() -> None:
+    headers = ['Nr', 'Ref', 'Coverage', 'Length', 'Calign', 'Calign25', 'Calign50']
+    with open(DIR + 'alignmenttime.csv', 'w') as f:
+        f_csv = csv.writer(f, delimiter='\t')
+        f_csv.writerow(headers)
+        counter = 1
+        for ref in [1, 2, 3]:
+            for coverage in coverages:
+                for length in average_length_list:
+                    calign_time = get_alignment_time(
+                        DIR + 'ref{}_c{}_l{}/'.format(ref, coverage, length) + 'calign.time')
+                    calign25_time = get_alignment_time(
+                        DIR + 'ref{}_c{}_l{}/'.format(ref, coverage, length) + 'calign_0_{}.time'.format(length // 4))
+                    calign50_time = get_alignment_time(
+                        DIR + 'ref{}_c{}_l{}/'.format(ref, coverage, length) + 'calign_0_{}.time'.format(length // 2))
+                    row = [counter, ref, coverage, length, calign_time, calign25_time, calign50_time]
+                    counter += 1
+                    f_csv.writerow(row)
 
 
 for ref in [1]:
     for coverage in [5, 20, 40]:
         for length in [100, 400, 700]:
             np_arr = read_score_files(
-                DIR + 'ref{0}_c{1}_l{2}/seqan.score'.format(ref, coverage, length),
-                DIR + 'ref{0}_c{1}_l{2}/seqan_0_max.score'.format(ref, coverage, length),
-                DIR + 'ref{0}_c{1}_l{2}/seqan_-5_5.score'.format(ref, coverage, length),
-                DIR + 'ref{0}_c{1}_l{2}/seqan_-20_20.score'.format(ref, coverage, length),
-                DIR + 'ref{0}_c{1}_l{2}/seqan_0_5.score'.format(ref, coverage, length),
-                DIR + 'ref{0}_c{1}_l{2}/seqan_0_20.score'.format(ref, coverage, length),
-                DIR + 'ref{0}_c{1}_l{2}/calign.score'.format(ref, coverage, length))
+                # DIR + 'ref{0}_c{1}_l{2}/seqan.score'.format(ref, coverage, length),
+                # DIR + 'ref{0}_c{1}_l{2}/seqan_0_max.score'.format(ref, coverage, length),
+                # DIR + 'ref{0}_c{1}_l{2}/seqan_-5_5.score'.format(ref, coverage, length),
+                # DIR + 'ref{0}_c{1}_l{2}/seqan_-20_20.score'.format(ref, coverage, length),
+                # DIR + 'ref{0}_c{1}_l{2}/seqan_0_5.score'.format(ref, coverage, length),
+                # DIR + 'ref{0}_c{1}_l{2}/seqan_0_20.score'.format(ref, coverage, length),
+                DIR + 'ref{0}_c{1}_l{2}/calign.score'.format(ref, coverage, length),
+                DIR + 'ref{0}_c{1}_l{2}/calign_0_{3}.score'.format(ref, coverage, length, length // 4),
+                DIR + 'ref{0}_c{1}_l{2}/calign_0_{3}.score'.format(ref, coverage, length, length // 2))
             absolute_number_of_high_quality_edges, relative_number_of_high_quality_edges = compare_degree_of_nodes(
                 np_arr)
             write_csv(DIR + 'ref{0}_c{1}_l{2}/absolute_edge_comparison.csv'.format(ref, coverage, length),
@@ -98,3 +131,4 @@ write_average_edge_stats()
 write_average_edge_stats('100')
 write_average_edge_stats('400')
 write_average_edge_stats('700')
+write_alignment_time_stats()

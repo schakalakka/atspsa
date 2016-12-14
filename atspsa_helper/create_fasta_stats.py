@@ -25,21 +25,26 @@ def filter_included_reads(reads: List[Tuple[str, str]]) -> List[Tuple[str, str]]
 
 def compute_objective_function_value(filtered_reads: List[Tuple[str, str]]) -> int:
     objective_value = 0
+    gap_counter = 0
     tar_list = []
-    last_begin_index, last_end_index, _ = [int(x) for x in filtered_reads[0][0].split('/')[-1].split('_')]
-    counter = 0
+    last_begin_index, last_end_index, last_length = [int(x) for x in filtered_reads[0][0].split('/')[-1].split('_')]
+    pos_indices = [(int(x), int(y)) for x, y, _ in [read[0].split('/')[-1].split('_') for read in filtered_reads]]
+    summed_length = sum([y - x for x, y in pos_indices])
     for i in range(1, len(filtered_reads)):
         read_id = filtered_reads[i][0]
-        next_begin_index, next_end_index, _ = [int(x) for x in read_id.split('/')[-1].split('_')]
-        if last_end_index - next_begin_index >= MINIMAL_OVERLAP_SCORE:
+        next_begin_index, next_end_index, next_length = [int(x) for x in read_id.split('/')[-1].split('_')]
+        if last_end_index - next_begin_index > 0:
             objective_value += last_end_index - next_begin_index
+            # objective_value += next_begin_index - last_begin_index
             tar_list.append(last_end_index - next_begin_index)
         else:
-            objective_value += -BIG_M_WEIGHT
-            counter += 1
-            tar_list.append(-BIG_M_WEIGHT)
+            # objective_value += summed_length
+            # tar_list.append(summed_length)
+            tar_list.append(0)
+            gap_counter += 1
         last_begin_index, last_end_index = next_begin_index, next_end_index
-    return objective_value
+    objective_value = summed_length - objective_value
+    return objective_value, gap_counter
 
 
 def compute_objective_function_value_of_fasta(fasta_file: str) -> int:
@@ -63,36 +68,36 @@ def write_fasta_stat(fasta_file, ref_file):
         median = sorted([x for x in read_lengths])[len(read_lengths) // 2]
         shortest = min([x for x in read_lengths])
         longest = max([x for x in read_lengths])
-        objective_value = compute_objective_function_value_of_fasta(fasta_file)
+        objective_value, actual_gaps = compute_objective_function_value_of_fasta(fasta_file)
         expected_gaps = len(reads) * math.exp(-real_coverage)
         unsequenced_part = math.exp(-real_coverage)
         handle.write('Real Coverage: {}\n'
                      'Number of reads: {}\n'
                      'Average read length: {}\n'
-                     'Median read length: {}\n'
-                     'Shortest read length" : {}\n'
-                     'Longest read length: {}\n'
+                     # 'Median read length: {}\n'
+                     # 'Shortest read length: {}\n'
+                     # 'Longest read length: {}\n'
                      'Objective function value: {}\n'
                      'Expected gaps: {}\n'
-                     'Unsequenced part: {}'.format(real_coverage, nr_reads, average, median, shortest, longest,
-                                                   objective_value, expected_gaps,
+                     'Actual gaps: {}\n'
+                     'Unsequenced part: {}'.format(int(real_coverage), nr_reads, average, objective_value,
+                                                   expected_gaps, actual_gaps,
                                                    unsequenced_part))
-    return (real_coverage, nr_reads, average, median, shortest, longest, objective_value, expected_gaps)
+    return (real_coverage, nr_reads, average, objective_value, expected_gaps, actual_gaps)
 
 
 def make_latex_stat_table(stats, ref_number: int):
-    output = '\\begin{tabular}{|c|c|c|c|c|c|c|c|}\\hline\n& \\multicolumn{4}{c|}{Read Length} & & & \\\\\nCoverage & Average & Median & Shortest' \
-             '& Longest & \\#Reads & Objective Value & Exp. Gaps \\\\\n\\hline\n'
+    output = '\\ra{1.2}\\begin{tabular}{@{}rrrrrr@{}}\\toprule\nCoverage & Read Length' \
+             '& Reads & Exp. Gaps & Actual Gaps & Objective Value \\\\\n\\midrule\n'
     for coverage in coverages:
+        if coverage != 5:
+            output += '\\hdashline\n'
         for average_length in average_length_list:
             val = stats[(coverage, average_length)]
-            output = output + '{0:.1f} & {1:.1f} & {2} & {3} & {4} & {5} & {6} & {7:.2f}\\\\\n'.format(val[0], val[2],
-                                                                                                       val[3],
-                                                                                                       val[4], val[5],
-                                                                                                       val[1],
-                                                                                                       val[6], val[7])
-        output = output + '\\hline\n'
-    output = output + '\\end{tabular}'
+            output = output + '{0} & {1} & {2} & {3:.2f} & {4} & {5}\\\\\n'.format(int(val[0]), int(val[2]),
+                                                                                   val[1], val[4], val[5], val[3])
+        output = output + '\n'
+    output = output + '\\bottomrule\n\\end{tabular}'
     with open(DIR + 'ref{}_stats.tex'.format(ref_number), 'w') as f:
         f.write(output)
 
@@ -110,3 +115,9 @@ if __name__ == '__main__':
         average_length = int(file.split('_l')[1].split('/')[0])
         stats[(coverage, average_length)] = write_fasta_stat(file, ref2)
     make_latex_stat_table(stats, 2)
+    stats = {}
+    for file in glob.glob(DIR + 'ref3_c*/reads.fasta'):
+        coverage = int(file.split('_c')[1].split('_l')[0])
+        average_length = int(file.split('_l')[1].split('/')[0])
+        stats[(coverage, average_length)] = write_fasta_stat(file, ref3)
+    make_latex_stat_table(stats, 3)
