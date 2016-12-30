@@ -2,6 +2,7 @@ __author__ = 'andreas'
 
 import os
 
+import numpy as np
 from Bio import SeqIO
 from Bio.Alphabet import generic_dna
 
@@ -13,7 +14,8 @@ def parse_fasta(fasta_file):
 
 def parse_fasta_with_id(fasta_file):
     print("Reading fasta file...")
-    return [(str(seqRecord.id), (str(seqRecord.seq))) for seqRecord in SeqIO.parse(fasta_file, "fasta", generic_dna)]
+    return np.array(
+        [(str(seqRecord.id), (str(seqRecord.seq))) for seqRecord in SeqIO.parse(fasta_file, "fasta", generic_dna)])
 
 
 def parse_tour(tour_file):

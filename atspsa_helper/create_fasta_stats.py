@@ -88,7 +88,7 @@ def write_fasta_stat(fasta_file, ref_file):
 
 def make_latex_stat_table(stats, ref_number: int):
     output = '\\ra{1.2}\\begin{tabular}{@{}rrrrrr@{}}\\toprule\nCoverage & Read Length' \
-             '& Reads & Exp. Gaps & Actual Gaps & Objective Value \\\\\n\\midrule\n'
+             '& Reads & Exp. Gaps & Orig. Gaps & Objective Value \\\\\n\\midrule\n'
     for coverage in coverages:
         if coverage != 5:
             output += '\\hdashline\n'

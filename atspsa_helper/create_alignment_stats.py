@@ -7,7 +7,7 @@ import numpy as np
 
 from config import *
 
-QUALITY_THRESHOLDS = [0, 0.7, 0.9, 0.99]
+QUALITY_THRESHOLDS = [0, 0.9]
 ALIGNERS = ['Calign', 'Calign25', 'Calign50']
 
 
@@ -29,7 +29,7 @@ def read_score_files(*args) -> np.ndarray:
 
 
 def compare_degree_of_nodes(np_arr):
-    absolute_number_of_high_quality_edges = np.zeros((len(QUALITY_THRESHOLDS), len(np_arr)), dtype=np.int32)
+    absolute_number_of_high_quality_edges = np.zeros((len(QUALITY_THRESHOLDS), len(np_arr)), dtype=np.float32)
     relative_number_of_high_quality_edges = np.zeros((len(QUALITY_THRESHOLDS), len(np_arr)), dtype=np.float32)
     for i, elem in enumerate(np_arr[0]):
         for j, threshold in enumerate(QUALITY_THRESHOLDS):
@@ -41,8 +41,10 @@ def compare_degree_of_nodes(np_arr):
                     np_arr[k][i][np_arr[k][i] > (np.amax(np_arr[0][i]) * threshold)]) / foo
     for j, threshold in enumerate(QUALITY_THRESHOLDS):
         relative_number_of_high_quality_edges[j][0] = 1
+        # absolute_number_of_high_quality_edges[j][0] //= len(np_arr[k])
         for k in range(1, len(np_arr)):
             relative_number_of_high_quality_edges[j][k] /= len(np_arr[0])
+            # absolute_number_of_high_quality_edges[j][k] /= len(np_arr[k])
     # print(absolute_number_of_high_quality_edges)
     # print(relative_number_of_high_quality_edges)
     return absolute_number_of_high_quality_edges, relative_number_of_high_quality_edges
@@ -131,4 +133,6 @@ write_average_edge_stats()
 write_average_edge_stats('100')
 write_average_edge_stats('400')
 write_average_edge_stats('700')
+
 write_alignment_time_stats()
+

@@ -27,7 +27,7 @@ def read_score_file(file):
     with open(file, 'r') as f:
         nr_reads = int(f.readline())
     df = pandas.read_csv(file, dtype=int, skiprows=1, sep="\t", header=None, names=['i', 'j', 'score'])
-    score = np.zeros((nr_reads, nr_reads), dtype=np.int32)
+    score = np.zeros((nr_reads + 1, nr_reads + 1), dtype=np.int32)
     for row in df.values:
         score[row[0]][row[1]] = row[2]
     return nr_reads, score

@@ -16,10 +16,16 @@ def read_assembly_file(file: str) -> List:
         return [-1, -1, -1, -1, -1, -1]
     with open(file, 'r') as f:
         file_content_string = f.read()
-        lkh_gaps = len(file_content_string.split('LKH_Contigs:\n')[1].split('\nLKH_Objective')[0].split('\n')) - 1
+        if 'LKH_Contigs:\nLKH_Objective' in file_content_string:
+            lkh_gaps = -1
+        else:
+            lkh_gaps = len(file_content_string.split('LKH_Contigs:\n')[1].split('\nLKH_Objective')[0].split('\n')) - 1
         lkh_value = int(file_content_string.split('LKH_Objective_Value: ')[1].split('\n')[0])
         lkh_time = float(file_content_string.split('LKH_Time: ')[1].split('\n')[0])
-        ap_gaps = len(file_content_string.split('AP_Contigs:\n')[1].split('\nAP_Objective')[0].split('\n')) - 1
+        if 'AP_Contigs:\nAP_Objective' in file_content_string:
+            ap_gaps = -1
+        else:
+            ap_gaps = len(file_content_string.split('AP_Contigs:\n')[1].split('\nAP_Objective')[0].split('\n')) - 1
         ap_value = int(file_content_string.split('AP_Objective_Value: ')[1].split('\n')[0])
         ap_time = float(file_content_string.split('AP_Time: ')[1].split('\n')[0])
 
@@ -77,7 +83,7 @@ def write_assembly_stats_tex(statsdict: Dict) -> None:
                 dashline_active = '\\hdashline\n'
             f.write('{}\\bfseries {}\\\\\n'.format(dashline_active, ref_name))
             for c in coverages:
-                f.write('$C = {}$\\\\\n'.format(c))
+                f.write('$c = {}$\\\\\n'.format(c))
                 for length in average_length_list:
                     val = stats_dict[(ref_name, c, length)]
                     row = [length]
@@ -152,6 +158,59 @@ for ref_number in [1, 2, 3]:
             #     Assembly_Stats(dir, len(lkh_contigs), lkh_value, lkh_time, len(ap_contigs), ap_value, ap_time,
             #                    actual_Objective_value))
 
+
+def write_whole_stats() -> None:
+    headers = ['CalignLKH', 'CalignAP', 'CalignALKH', 'CalignAAP', 'CalignBLKH',
+               'CalignBAP']
+    vals = {'CalignLKH': 0, 'CalignAP': 0, 'CalignALKH': 0, 'CalignAAP': 0, 'CalignBLKH': 0,
+            'CalignBAP': 0}
+    gaps = {'CalignLKH': 0, 'CalignAP': 0, 'CalignALKH': 0, 'CalignAAP': 0, 'CalignBLKH': 0,
+            'CalignBAP': 0}
+    both = {'CalignLKH': 0, 'CalignAP': 0, 'CalignALKH': 0, 'CalignAAP': 0, 'CalignBLKH': 0,
+            'CalignBAP': 0}
+    atspvsapval = {'CalignLKH': 0, 'CalignAP': 0, 'CalignALKH': 0, 'CalignAAP': 0, 'CalignBLKH': 0,
+                   'CalignBAP': 0}
+    atspvsap = {'CalignLKH': 0, 'CalignAP': 0, 'CalignALKH': 0, 'CalignAAP': 0, 'CalignBLKH': 0,
+                'CalignBAP': 0}
+    with open(DIR + 'assembly_stats.csv', 'r') as f:
+        f_csv = csv.DictReader(f, delimiter=',')
+        for row in f_csv:
+            for elem in headers:
+                if row['ActualValue'] == row[elem + 'Value']:
+                    vals[elem] += 1
+                if row['ActualGaps'] == row[elem + 'Gaps']:
+                    gaps[elem] += 1
+                if row['ActualValue'] == row[elem + 'Value'] and row['ActualGaps'] == row[elem + 'Gaps']:
+                    both[elem] += 1
+            if row['CalignLKHValue'] == row['CalignAPValue']:
+                atspvsapval['CalignLKH'] += 1
+                atspvsapval['CalignAP'] += 1
+            if row['CalignALKHValue'] == row['CalignAAPValue']:
+                atspvsapval['CalignALKH'] += 1
+                atspvsapval['CalignAAP'] += 1
+            if row['CalignBLKHValue'] == row['CalignBAPValue']:
+                atspvsapval['CalignBLKH'] += 1
+                atspvsapval['CalignBAP'] += 1
+            if row['CalignLKHValue'] == row['CalignAPValue'] and row['CalignLKHGaps'] == row['CalignAPGaps']:
+                atspvsap['CalignLKH'] += 1
+                atspvsap['CalignAP'] += 1
+            if row['CalignALKHValue'] == row['CalignAAPValue'] and row['CalignALKHGaps'] == row['CalignAAPGaps']:
+                atspvsap['CalignALKH'] += 1
+                atspvsap['CalignAAP'] += 1
+            if row['CalignBLKHValue'] == row['CalignBAPValue'] and row['CalignBLKHGaps'] == row['CalignBAPGaps']:
+                atspvsap['CalignBLKH'] += 1
+                atspvsap['CalignBAP'] += 1
+    with open(DIR + 'complete_stats.csv', 'w') as g:
+        g_csv = csv.DictWriter(g, delimiter='&', fieldnames=headers)
+        g_csv.writeheader()
+        g_csv.writerow(vals)
+        g_csv.writerow(gaps)
+        g_csv.writerow(both)
+        g_csv.writerow(atspvsapval)
+        g_csv.writerow(atspvsap)
+
+
 write_assembly_stats(stats_dict)
 write_assembly_stats2(stats_dict)
 write_assembly_stats_tex(stats_dict)
+write_whole_stats()
